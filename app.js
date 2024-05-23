@@ -100,7 +100,7 @@ io.on("connection", (socket) => {
 console.log(users);
 const port = process.env.PORT || 5000;
 app.use(cookieParser());
-app.use(cors({ credentials: true, origin: "http://localhost:5173" }));
+app.use(cors({ credentials: true, origin: process.env.CLIENT_URL }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/users", UserRoutes);

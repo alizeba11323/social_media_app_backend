@@ -54,6 +54,8 @@ const Login = AsyncHandler(async (req, res, next) => {
     .status(200)
     .cookie("social_media_app_token", token, {
       httpOnly: true,
+      sameSite: "none",
+      secure: true,
       maxAge: process.env.EXPIRES_IN * 24 * 60 * 60 * 1000,
     })
     .json({ message: "User LoggedIn Successfully", token });
