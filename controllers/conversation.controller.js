@@ -21,9 +21,14 @@ const CreateMessage = AsyncHandler(async (req, res, next) => {
     sender: req.user,
     reciever,
   });
-  const newMessage = await MessageModel.findById(message._id).populate(
-    "conversation sender reciever"
-  );
+  const newMessage = await MessageModel.findById(message._id)
+    .populate("sender reciever")
+    .populate({
+      path: "conversation",
+      populate: {
+        path: "recipients",
+      },
+    });
   return res.status(201).json({ message: newMessage });
 });
 
@@ -36,7 +41,15 @@ const getAllMessages = AsyncHandler(async (req, res, next) => {
   return res.status(200).json({ messages });
 });
 
+const GetAllConversations = AsyncHandler(async (req, res, next) => {
+  const conversations = await ConversationModel.find({
+    recipients: req.user,
+  }).populate("recipients");
+  res.status(200).json({ conversations });
+});
+
 module.exports = {
   CreateMessage,
   getAllMessages,
+  GetAllConversations,
 };

@@ -25,12 +25,13 @@ io.on("connection", (socket) => {
   console.log(socket.id + " connected...");
   socket.on("user_join", (userId) => {
     users.push({ socketId: socket.id, userId });
-    console.log(users);
+    io.emit("online-users", users);
   });
+
   socket.on("disconnect", () => {
     console.log("disconneted", socket.id);
     users = users.filter((usr) => usr.socketId !== socket.id);
-    console.log(users);
+    io.emit("online-users", users);
   });
   socket.on("liked_unliked_post", function ([post, myInfo]) {
     const ids = [...post.creator?.followers, post.creator?._id];
@@ -46,16 +47,16 @@ io.on("connection", (socket) => {
     const ids = [...post.creator?.followers, post.creator?._id];
     const clients = users.filter((usr) => ids.includes(usr.userId));
     clients?.map((client) => {
-      socket.to(client.socketId).emit("like-comment");
+      socket.to(client?.socketId).emit("like-comment");
     });
   });
   socket.on("create-comment", ([post, myInfo]) => {
     const ids = [...post.creator?.followers, post.creator?._id];
     const clients = users.filter((usr) => ids.includes(usr.userId));
     clients?.map((client) => {
-      socket.to(client.socketId).emit("create-comment");
+      socket.to(client?.socketId).emit("create-comment");
       socket
-        .to(client.socketId)
+        .to(client?.socketId)
         .emit("notification", `${myInfo.name} created  comment`);
     });
   });
@@ -65,7 +66,7 @@ io.on("connection", (socket) => {
     clients?.map((client) => {
       socket.to(client.socketId).emit("edit-comment");
       socket
-        .to(client.socketId)
+        .to(client?.socketId)
         .emit("notification", `${myInfo.name} Edited own comment`);
     });
   });
@@ -77,7 +78,7 @@ io.on("connection", (socket) => {
     const addMessage =
       message === "follow" ? "start Following You" : "UnFollow You";
     socket
-      .to(user.socketId)
+      .to(user?.socketId)
       .emit("notification", `${myInfo.name} ${addMessage} `);
   });
   socket.on("delete-comment", ([post, myInfo]) => {
@@ -86,7 +87,7 @@ io.on("connection", (socket) => {
     clients?.map((client) => {
       socket.to(client.socketId).emit("delete-comment");
       socket
-        .to(client.socketId)
+        .to(client?.socketId)
         .emit("notification", `${myInfo.name} deleted own comment`);
     });
   });

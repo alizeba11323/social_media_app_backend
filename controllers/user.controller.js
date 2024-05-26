@@ -79,10 +79,10 @@ const SearchUser = AsyncHandler(async (req, res, next) => {
   const { username } = req.params;
   const users = await UserModel.find({
     _id: { $ne: req.user },
-    username: { $regex: username },
+    username: { $regex: username, $options: "i" },
   })
     .limit(10)
-    .select("username avatar name");
+    .select("username avatar name _id");
   res.status(200).json({ users });
 });
 const SavedPost = AsyncHandler(async (req, res, next) => {
