@@ -19,8 +19,12 @@ cloudinary.config({
 });
 const app = express();
 const server = createServer(app);
-const io = new Server(server, { cors: process.env.CLIENT_URL });
+const io = new Server(server, {
+  cors: process.env.CLIENT_URL,
+  methods: ["POST", "GET", "PUT", "PATCH", "DELETE"],
+});
 let users = [];
+console.log(users);
 io.on("connection", (socket) => {
   console.log(socket.id + " connected...");
   socket.on("user_join", (userId) => {
@@ -30,12 +34,12 @@ io.on("connection", (socket) => {
 
   socket.on("disconnect", () => {
     console.log("disconneted", socket.id);
-    users = users.filter((usr) => usr.socketId !== socket.id);
+    users = users?.filter((usr) => usr.socketId !== socket.id);
     io.emit("online-users", users);
   });
   socket.on("liked_unliked_post", function ([post, myInfo]) {
     const ids = [...post.creator?.followers, post.creator?._id];
-    const clients = users.filter((usr) => ids.includes(usr.userId));
+    const clients = users?.filter((usr) => ids.includes(usr.userId));
     clients?.map((client) => {
       socket.to(client.socketId).emit("liked_unliked_post", post);
       socket
@@ -43,16 +47,19 @@ io.on("connection", (socket) => {
         .emit("notification", `${myInfo.name} likes or dislike your post`);
     });
   });
-  socket.on("like-comment", (post) => {
-    const ids = [...post.creator?.followers, post.creator?._id];
-    const clients = users.filter((usr) => ids.includes(usr.userId));
+  socket.on("like-comment", ([post]) => {
+    console.log(users);
+    const ids = [...post?.creator?.followers, post?.creator?._id];
+    console.log(ids);
+    const clients = users?.filter((usr) => ids.includes(usr?.userId));
+    console.log(clients);
     clients?.map((client) => {
       socket.to(client?.socketId).emit("like-comment");
     });
   });
   socket.on("create-comment", ([post, myInfo]) => {
     const ids = [...post.creator?.followers, post.creator?._id];
-    const clients = users.filter((usr) => ids.includes(usr.userId));
+    const clients = users?.filter((usr) => ids.includes(usr?.userId));
     clients?.map((client) => {
       socket.to(client?.socketId).emit("create-comment");
       socket
@@ -62,7 +69,7 @@ io.on("connection", (socket) => {
   });
   socket.on("edit-comment", ([post, myInfo]) => {
     const ids = [...post.creator?.followers, post.creator?._id];
-    const clients = users.filter((usr) => ids.includes(usr.userId));
+    const clients = users?.filter((usr) => ids.includes(usr?.userId));
     clients?.map((client) => {
       socket.to(client.socketId).emit("edit-comment");
       socket
@@ -83,7 +90,7 @@ io.on("connection", (socket) => {
   });
   socket.on("delete-comment", ([post, myInfo]) => {
     const ids = [...post.creator?.followers, post.creator?._id];
-    const clients = users.filter((usr) => ids.includes(usr.userId));
+    const clients = users?.filter((usr) => ids.includes(usr.userId));
     clients?.map((client) => {
       socket.to(client.socketId).emit("delete-comment");
       socket
